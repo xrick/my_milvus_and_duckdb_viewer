@@ -1,0 +1,28 @@
+📁 最簡化部署版本
+如果您想要最快速的部署，以下是最簡化的文件結構：
+database-viewer/
+├── 📄 main.py              # 後端主程序（已提供）
+├── 📄 requirements.txt     # 依賴項列表（已提供）
+├── 📄 index.html          # 前端頁面（從之前的 artifacts 複製）
+└── 📄 .env                # 可選配置文件
+🚀 快速部署命令
+bash# 1. 創建項目目錄
+mkdir database-viewer
+cd database-viewer
+
+# 2. 創建並複製文件
+# 將提供的代碼保存到對應文件中
+
+# 3. 安裝依賴項
+pip install -r requirements.txt
+
+# 4. 啟動應用程序
+python main.py
+🌐 訪問地址
+啟動成功後：
+
+主界面: http://localhost:8000
+API 文檔: http://localhost:8000/docs
+健康檢查: http://localhost:8000/health
+
+這個架構為您提供了從最簡單到完整企業級的部署選擇，您可以根據需求選擇適合的結構！

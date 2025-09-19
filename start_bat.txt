@@ -1,0 +1,78 @@
+@echo off
+chcp 65001 >nul
+title 資料庫檢視器
+
+echo.
+echo ================================================
+echo          🚀 資料庫檢視器啟動程序
+echo ================================================
+echo.
+
+REM 檢查 Python 是否安裝
+python --version >nul 2>&1
+if errorlevel 1 (
+    echo ❌ Python 未安裝或未添加到 PATH
+    echo 請先安裝 Python 3.8 或更高版本
+    pause
+    exit /b 1
+)
+
+echo ✅ 找到 Python
+
+REM 檢查是否在虛擬環境中
+if exist "venv\Scripts\activate.bat" (
+    echo 🔧 發現虛擬環境，正在激活...
+    call venv\Scripts\activate.bat
+    echo ✅ 虛擬環境已激活
+) else (
+    echo ℹ️  未找到虛擬環境，使用全局 Python 環境
+    echo 建議創建虛擬環境: python -m venv venv
+)
+
+REM 檢查 requirements.txt 文件
+if not exist "requirements.txt" (
+    echo ❌ 找不到 requirements.txt 文件
+    pause
+    exit /b 1
+)
+
+REM 安裝/更新依賴項
+echo.
+echo 📦 檢查並安裝依賴項...
+pip install -r requirements.txt
+if errorlevel 1 (
+    echo ❌ 依賴項安裝失敗
+    pause
+    exit /b 1
+)
+
+REM 檢查主程序文件
+if not exist "main.py" (
+    echo ❌ 找不到 main.py 文件
+    pause
+    exit /b 1
+)
+
+if not exist "start.py" (
+    echo ❌ 找不到 start.py 文件
+    pause
+    exit /b 1
+)
+
+REM 啟動應用程序
+echo.
+echo ================================================
+echo 🌐 正在啟動服務器...
+echo 📍 服務器地址: http://localhost:8000
+echo 📚 API 文檔: http://localhost:8000/docs  
+echo 🏥 健康檢查: http://localhost:8000/health
+echo ================================================
+echo.
+echo 按 Ctrl+C 停止服務器
+echo.
+
+python start.py
+
+echo.
+echo 👋 服務器已停止
+pause

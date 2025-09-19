@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>資料庫集合檢視器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .left-panel {
+            width: 300px;
+            background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 20px;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .right-panel {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+
+        .panel-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 30px;
+            text-align: center;
+            color: #ecf0f1;
+        }
+
+        .function-button {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        .function-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+        }
+
+        .function-button.active {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
+        }
+
+        .main-content {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            min-height: calc(100vh - 80px);
+        }
+
+        .content-title {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #34495e;
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .form-textarea {
+            height: 120px;
+            resize: vertical;
+        }
+
+        .action-button {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            margin-right: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+        }
+
+        .action-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4);
+        }
+
+        .secondary-button {
+            background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+            box-shadow: 0 4px 15px rgba(149, 165, 166, 0.3);
+        }
+
+        .secondary-button:hover {
+            box-shadow: 0 6px 20px rgba(149, 165, 166, 0.4);
+        }
+
+        .results-container {
+            margin-top: 30px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid #e9ecef;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .data-table th {
+            background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .data-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .data-table tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .upload-area {
+            border: 2px dashed #3498db;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            background: #ecf0f1;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .upload-area:hover {
+            background: #d5dbdb;
+            border-color: #2980b9;
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            color: #3498db;
+            margin-bottom: 15px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #3498db;
+            font-size: 16px;
+        }
+
+        .error-message {
+            background: #e74c3c;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .success-message {
+            background: #27ae60;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .connection-status {
+            margin-bottom: 20px;
+            padding: 10px;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+
+        .connected {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .disconnected {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 左側功能選擇面板 -->
+        <div class="left-panel">
+            <div class="panel-title">功能選擇</div>
+            <button class="function-button active" onclick="showMilvusViewer()">
+                Milvus 集合檢視器
+            </button>
+            <button class="function-button" onclick="showDuckDBViewer()">
+                DuckDB 數據檢視器
+            </button>
+        </div>
+
+        <!-- 右側主要內容面板 -->
+        <div class="right-panel">
+            <div class="main-content">
+                <!-- Milvus 檢視器 -->
+                <div id="milvus-viewer">
+                    <div class="content-title">Milvus 集合檢視器</div>
+                    
+                    <div class="connection-status disconnected" id="milvus-status">
+                        Milvus 連接狀態：未連接
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Milvus 服務器地址：</label>
+                        <input type="text" class="form-input" id="milvus-host" value="localhost" placeholder="輸入 Milvus 主機地址">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">端口：</label>
+                        <input type="number" class="form-input" id="milvus-port" value="19530" placeholder="輸入 Milvus 端口">
+                    </div>
+
+                    <button class="action-button" onclick="connectMilvus()">連接 Milvus</button>
+                    <button class="action-button secondary-button" onclick="loadCollections()">載入集合列表</button>
+
+                    <div class="form-group">
+                        <label class="form-label">選擇集合：</label>
+                        <select class="form-select" id="collection-select">
+                            <option value="">請先連接 Milvus 並載入集合</option>
+                        </select>
+                    </div>
+
+                    <button class="action-button" onclick="viewCollectionInfo()">查看集合信息</button>
+                    <button class="action-button" onclick="viewCollectionData()">查看集合數據</button>
+
+                    <div class="results-container" id="milvus-results">
+                        <h3>結果顯示</h3>
+                        <div id="milvus-data"></div>
+                    </div>
+                </div>
+
+                <!-- DuckDB 檢視器 -->
+                <div id="duckdb-viewer" class="hidden">
+                    <div class="content-title">DuckDB 數據檢視器</div>
+
+                    <div class="form-group">
+                        <label class="form-label">上傳 DuckDB 文件：</label>
+                        <div class="upload-area" onclick="document.getElementById('duckdb-file').click()">
+                            <div class="upload-icon">📁</div>
+                            <div>點擊選擇 DuckDB 文件或拖放文件到此處</div>
+                            <div style="font-size: 14px; color: #7f8c8d; margin-top: 10px;">支持 .db, .duckdb 文件格式</div>
+                        </div>
+                        <input type="file" class="file-input" id="duckdb-file" accept=".db,.duckdb" onchange="uploadDuckDB()">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">選擇資料表：</label>
+                        <select class="form-select" id="table-select">
+                            <option value="">請先上傳 DuckDB 文件</option>
+                        </select>
+                    </div>
+
+                    <button class="action-button" onclick="viewTableData()">查看表格數據</button>
+                    <button class="action-button secondary-button" onclick="clearResults()">清除結果</button>
+
+                    <div class="form-group">
+                        <label class="form-label">SQL 查詢語句：</label>
+                        <textarea class="form-textarea" id="sql-query" placeholder="輸入您的 SQL 查詢語句，例如：SELECT * FROM table_name LIMIT 100"></textarea>
+                    </div>
+
+                    <button class="action-button" onclick="executeSQLQuery()">執行 SQL 查詢</button>
+
+                    <div class="results-container" id="duckdb-results">
+                        <h3>查詢結果</h3>
+                        <div id="duckdb-data"></div>
+                    </div>
+                </div>
+
+                <div class="loading" id="loading">
+                    <div>⏳ 載入中...</div>
+                </div>
+
+                <div class="error-message" id="error-message"></div>
+                <div class="success-message" id="success-message"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000';
+        
+        // 顯示載入狀態
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        // 顯示錯誤訊息
+        function showError(message) {
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        // 顯示成功訊息
+        function showSuccess(message) {
+            const successDiv = document.getElementById('success-message');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            setTimeout(() => {
+                successDiv.style.display = 'none';
+            }, 3000);
+        }
+
+        // 切換到 Milvus 檢視器
+        function showMilvusViewer() {
+            document.getElementById('milvus-viewer').classList.remove('hidden');
+            document.getElementById('duckdb-viewer').classList.add('hidden');
+            
+            // 更新按鈕狀態
+            const buttons = document.querySelectorAll('.function-button');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            buttons[0].classList.add('active');
+        }
+
+        // 切換到 DuckDB 檢視器
+        function showDuckDBViewer() {
+            document.getElementById('milvus-viewer').classList.add('hidden');
+            document.getElementById('duckdb-viewer').classList.remove('hidden');
+            
+            // 更新按鈕狀態
+            const buttons = document.querySelectorAll('.function-button');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            buttons[1].classList.add('active');
+        }
+
+        // Milvus 相關功能
+        async function connectMilvus() {
+            const host = document.getElementById('milvus-host').value;
+            const port = document.getElementById('milvus-port').value;
+            
+            showLoading();
+            try {
+                const response = await fetch(`${API_BASE}/milvus/connect`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        host: host,
+                        port: parseInt(port)
+                    })
+                });
+                
+                const result = await response.json();
+                if (response.ok) {
+                    showSuccess('Milvus 連接成功！');
+                    document.getElementById('milvus-status').className = 'connection-status connected';
+                    document.getElementById('milvus-status').textContent = 'Milvus 連接狀態：已連接';
+                } else {
+                    showError(result.detail);
+                }
+            } catch (error) {
+                showError('連接失敗：' + error.message);
+            }
+            hideLoading();
+        }
+
+        async function loadCollections() {
+            showLoading();
+            try {
+                const response = await fetch(`${API_BASE}/milvus/collections`);
+                const result = await response.json();
+                
+                if (response.ok) {
+                    const select = document.getElementById('collection-select');
+                    select.innerHTML = '<option value="">選擇一個集合</option>';
+                    result.collections.forEach(collection => {
+                        const option = document.createElement('option');
+                        option.value = collection;
+                        option.textContent = collection;
+                        select.appendChild(option);
+                    });
+                    showSuccess('集合列表載入成功！');
+                } else {
+                    showError(result.detail);
+                }
+            } catch (error) {
+                showError('載入集合失敗：' + error.message);
+            }
+            hideLoading();
+        }
+
+        async function viewCollectionInfo() {
+            const collectionName = document.getElementById('collection-select').value;
+            if (!collectionName) {
+                showError('請先選擇一個集合');
+                return;
+            }
+
+            showLoading();
+            try {
+                const response = await fetch(`${API_BASE}/milvus/collection/${collectionName}/info`);
+                const result = await response.json();
+                
+                if (response.ok) {
+                    const resultsDiv = document.getElementById('milvus-data');
+                    resultsDiv.innerHTML = `
+                        <h4>集合信息：${collectionName}</h4>
+                        <pre>${JSON.stringify(result, null, 2)}</pre>
+                    `;
+                } else {
+                    showError(result.detail);
+                }
+            } catch (error) {
+                showError('獲取集合信息失敗：' + error.message);
+            }
+            hideLoading();
+        }
+
+        async function viewCollectionData() {
+            const collectionName = document.getElementById('collection-select').value;
+            if (!collectionName) {
+                showError('請先選擇一個集合');
+                return;
+            }
+
+            showLoading();
+            try {
+                const response = await fetch(`${API_BASE}/milvus/collection/${collectionName}/data?limit=100`);
+                const result = await response.json();
+                
+                if (response.ok) {
+                    const resultsDiv = document.getElementById('milvus-data');
+                    if (result.data && result.data.length > 0) {
+                        let tableHTML = '<div class="table-container"><table class="data-table"><thead><tr>';
+                        
+                        // 表頭
+                        Object.keys(result.data[0]).forEach(key => {
+                            tableHTML += `<th>${key}</th>`;
+                        });
+                        tableHTML += '</tr></thead><tbody>';
+                        
+                        // 數據行
+                        result.data.forEach(row => {
+                            tableHTML += '<tr>';
+                            Object.values(row).forEach(value => {
+                                tableHTML += `<td>${JSON.stringify(value)}</td>`;
+                            });
+                            tableHTML += '</tr>';
+                        });
+                        
+                        tableHTML += '</tbody></table></div>';
+                        resultsDiv.innerHTML = `<h4>集合數據：${collectionName}</h4>${tableHTML}`;
+                    } else {
+                        resultsDiv.innerHTML = `<h4>集合數據：${collectionName}</h4><p>無數據</p>`;
+                    }
+                } else {
+                    showError(result.detail);
+                }
+            } catch (error) {
+                showError('獲取集合數據失敗：' + error.message);
+            }
+            hideLoading();
+        }
+
+        // DuckDB 相關功能
+        async function uploadDuckDB() {
+            const fileInput = document.getElementById('duckdb-file');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                showError('請選擇一個文件');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            showLoading();
+            try {
+                const response = await fetch(`${API_BASE}/duckdb/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                if (response.ok) {
+                    showSuccess('DuckDB 文件上傳成功！');
+                    loadTables();
+                } else {
+                    showError(result.detail);
+                }
+            } catch (error) {
+                showError('上傳失敗：' + error.message);
+            }
+            hideLoading();
+        }
+
+        async function loadTables() {
+            try {
+                const response = await fetch(`${API_BASE}/duckdb/tables`);
+                const result = await response.json();
+                
+                if (response.ok) {
+                    const select = document.getElementById('table-select');
+                    select.innerHTML = '<option value="">選擇一個表格</option>';
+                    result.tables.forEach(table => {
+                        const option = document.createElement('option');
+                        option.value = table;
+                        option.textContent = table;
+                        select.appendChild(option);
+                    });
+                } else {
+                    showError(result.detail);
+                }
+            } catch (error) {
+                showError('載入表格失敗：' + error.message);
+            }
+        }
+
+        async function viewTableData() {
+            const tableName = document.getElementById('table-select').value;
+            if (!tableName) {
+                showError('請先選擇一個表格');
+                return;
+            }
+
+            showLoading();
+            try {
+                const response = await fetch(`${API_BASE}/duckdb/table/${tableName}/data?limit=100`);
+                const result = await response.json();
+                
+                if (response.ok) {
+                    displayTableData(result.data, `表格數據：${tableName}`);
+                } else {
+                    showError(result.detail);
+                }
+            } catch (error) {
+                showError('獲取表格數據失敗：' + error.message);
+            }
+            hideLoading();
+        }
+
+        async function executeSQLQuery() {
+            const sqlQuery = document.getElementById('sql-query').value.trim();
+            if (!sqlQuery) {
+                showError('請輸入 SQL 查詢語句');
+                return;
+            }
+
+            showLoading();
+            try {
+                const response = await fetch(`${API_BASE}/duckdb/query`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        query: sqlQuery
+                    })
+                });
+                
+                const result = await response.json();
+                if (response.ok) {
+                    displayTableData(result.data, 'SQL 查詢結果');
+                } else {
+                    showError(result.detail);
+                }
+            } catch (error) {
+                showError('執行查詢失敗：' + error.message);
+            }
+            hideLoading();
+        }
+
+        function displayTableData(data, title) {
+            const resultsDiv = document.getElementById('duckdb-data');
+            
+            if (data && data.length > 0) {
+                let tableHTML = '<div class="table-container"><table class="data-table"><thead><tr>';
+                
+                // 表頭
+                Object.keys(data[0]).forEach(key => {
+                    tableHTML += `<th>${key}</th>`;
+                });
+                tableHTML += '</tr></thead><tbody>';
+                
+                // 數據行
+                data.forEach(row => {
+                    tableHTML += '<tr>';
+                    Object.values(row).forEach(value => {
+                        tableHTML += `<td>${value !== null ? value : 'NULL'}</td>`;
+                    });
+                    tableHTML += '</tr>';
+                });
+                
+                tableHTML += '</tbody></table></div>';
+                resultsDiv.innerHTML = `<h4>${title}</h4><p>共 ${data.length} 行數據</p>${tableHTML}`;
+            } else {
+                resultsDiv.innerHTML = `<h4>${title}</h4><p>無數據</p>`;
+            }
+        }
+
+        function clearResults() {
+            document.getElementById('duckdb-data').innerHTML = '';
+        }
+
+        // 拖放功能
+        const uploadArea = document.querySelector('.upload-area');
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.background = '#d5dbdb';
+        });
+        
+        uploadArea.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            uploadArea.style.background = '#ecf0f1';
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.background = '#ecf0f1';
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                document.getElementById('duckdb-file').files = files;
+                uploadDuckDB();
+            }
+        });
+    </script>
+</body>
+</html>

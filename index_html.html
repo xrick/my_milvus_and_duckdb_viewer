@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>資料庫集合檢視器</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="icon" href="/static/assets/favicon.ico" type="image/x-icon">
+</head>
+<body>
+    <div class="container">
+        <!-- 左側功能選擇面板 -->
+        <div class="left-panel">
+            <div class="panel-title">功能選擇</div>
+            <button class="function-button active" onclick="showMilvusViewer()">
+                Milvus 集合檢視器
+            </button>
+            <button class="function-button" onclick="showDuckDBViewer()">
+                DuckDB 數據檢視器
+            </button>
+        </div>
+
+        <!-- 右側主要內容面板 -->
+        <div class="right-panel">
+            <div class="main-content">
+                <!-- Milvus 檢視器 -->
+                <div id="milvus-viewer">
+                    <div class="content-title">Milvus 集合檢視器</div>
+                    
+                    <div class="connection-status disconnected" id="milvus-status">
+                        Milvus 連接狀態：未連接
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Milvus 服務器地址：</label>
+                        <input type="text" class="form-input" id="milvus-host" value="localhost" placeholder="輸入 Milvus 主機地址">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">端口：</label>
+                        <input type="number" class="form-input" id="milvus-port" value="19530" placeholder="輸入 Milvus 端口">
+                    </div>
+
+                    <button class="action-button" onclick="connectMilvus()">連接 Milvus</button>
+                    <button class="action-button secondary-button" onclick="loadCollections()">載入集合列表</button>
+
+                    <div class="form-group">
+                        <label class="form-label">選擇集合：</label>
+                        <select class="form-select" id="collection-select">
+                            <option value="">請先連接 Milvus 並載入集合</option>
+                        </select>
+                    </div>
+
+                    <button class="action-button" onclick="viewCollectionInfo()">查看集合信息</button>
+                    <button class="action-button" onclick="viewCollectionData()">查看集合數據</button>
+
+                    <div class="results-container" id="milvus-results">
+                        <h3>結果顯示</h3>
+                        <div id="milvus-data"></div>
+                    </div>
+                </div>
+
+                <!-- DuckDB 檢視器 -->
+                <div id="duckdb-viewer" class="hidden">
+                    <div class="content-title">DuckDB 數據檢視器</div>
+
+                    <div class="form-group">
+                        <label class="form-label">上傳 DuckDB 文件：</label>
+                        <div class="upload-area" onclick="document.getElementById('duckdb-file').click()">
+                            <div class="upload-icon">📁</div>
+                            <div>點擊選擇 DuckDB 文件或拖放文件到此處</div>
+                            <div style="font-size: 14px; color: #7f8c8d; margin-top: 10px;">支持 .db, .duckdb 文件格式</div>
+                        </div>
+                        <input type="file" class="file-input" id="duckdb-file" accept=".db,.duckdb" onchange="uploadDuckDB()">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">選擇資料表：</label>
+                        <select class="form-select" id="table-select">
+                            <option value="">請先上傳 DuckDB 文件</option>
+                        </select>
+                    </div>
+
+                    <button class="action-button" onclick="viewTableData()">查看表格數據</button>
+                    <button class="action-button secondary-button" onclick="clearResults()">清除結果</button>
+
+                    <div class="form-group">
+                        <label class="form-label">SQL 查詢語句：</label>
+                        <textarea class="form-textarea" id="sql-query" placeholder="輸入您的 SQL 查詢語句，例如：SELECT * FROM table_name LIMIT 100"></textarea>
+                    </div>
+
+                    <button class="action-button" onclick="executeSQLQuery()">執行 SQL 查詢</button>
+
+                    <div class="results-container" id="duckdb-results">
+                        <h3>查詢結果</h3>
+                        <div id="duckdb-data"></div>
+                    </div>
+                </div>
+
+                <div class="loading" id="loading">
+                    <div>⏳ 載入中...</div>
+                </div>
+
+                <div class="error-message" id="error-message"></div>
+                <div class="success-message" id="success-message"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
